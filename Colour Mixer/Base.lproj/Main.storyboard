@@ -17,7 +17,7 @@
                     <view key="view" contentMode="scaleToFill" id="4wl-Rx-Fle">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" red="0.98259705310000001" green="0.79810625310000005" blue="0.19893708830000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <viewLayoutGuide key="safeArea" id="ngM-L9-Qh7"/>
                     </view>
                     <navigationItem key="navigationItem" id="OC0-xM-AqE">
@@ -178,6 +178,10 @@
                                 <state key="normal" title="Done">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
+                                <connections>
+                                    <action selector="doneButtonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="6Jm-Nf-uJJ"/>
+                                    <segue destination="4sS-6a-Nr9" kind="unwind" unwindAction="unwindToStartWithUnwindSegue:" id="VsN-BB-zfh"/>
+                                </connections>
                             </button>
                         </subviews>
                         <constraints>
@@ -216,6 +220,7 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+                <exit id="4sS-6a-Nr9" userLabel="Exit" sceneMemberID="exit"/>
                 <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="fk1-xb-wsg">
                     <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
