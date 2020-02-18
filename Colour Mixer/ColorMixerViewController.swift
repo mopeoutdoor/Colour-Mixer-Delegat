@@ -16,17 +16,14 @@ class ColorMixerViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var colourView: UIView!
     
-    @IBOutlet weak var redLabel: UILabel!
     @IBOutlet weak var redValueLabel: UILabel!
     @IBOutlet weak var redSlider: UISlider!
     @IBOutlet weak var redTextField: UITextField!
     
-    @IBOutlet weak var greenLabel: UILabel!
     @IBOutlet weak var greenValueLabel: UILabel!
     @IBOutlet weak var greenSlider: UISlider!
     @IBOutlet weak var greenTextField: UITextField!
     
-    @IBOutlet weak var blueLabel: UILabel!
     @IBOutlet weak var blueValueLabel: UILabel!
     @IBOutlet weak var blueSlider: UISlider!
     @IBOutlet weak var blueTextField: UITextField!
@@ -64,24 +61,13 @@ class ColorMixerViewController: UIViewController, UITextFieldDelegate {
         // Read RGB cololor from 'color'
         color.getRed(&redCurrentValue, green: &greenCurrentValue, blue: &blueCurrentValue, alpha: &alphaValue)
         
-        //Red
-        updateDefaultValue(colour: .red)
-        updateCurrentValue(colour: .red)
+        updateDefaults()
+        updateValue(for: redValueLabel, greenValueLabel, blueValueLabel)
+        updateValue(for: redSlider, greenSlider, blueSlider)
+        updateValue(for: redTextField, greenTextField, blueTextField)
         
-        //Green
-        updateDefaultValue(colour: .green)
-        updateCurrentValue(colour: .green)
+        setColor()
         
-        //Blue
-        updateDefaultValue(colour: .blue)
-        updateCurrentValue(colour: .blue)
-        
-        //View
-        view.backgroundColor = UIColor(red: redBoardValue, green: greenBoardValue, blue: blueBoardValue, alpha: alphaValue)
-        
-        colourView.backgroundColor = UIColor(red: redCurrentValue, green: greenCurrentValue, blue: blueCurrentValue, alpha: alphaValue)
-        
-        //Delegate
         redTextField.delegate = self
         greenTextField.delegate = self
         blueTextField.delegate = self
@@ -90,32 +76,32 @@ class ColorMixerViewController: UIViewController, UITextFieldDelegate {
 
     @IBAction func redSliderAction(_ sender: UISlider) {
         redCurrentValue = CGFloat(sender.value)
-        updateCurrentValue(colour: .red)
-        colourView.backgroundColor = UIColor(red: redCurrentValue, green: greenCurrentValue, blue: blueCurrentValue, alpha: alphaValue)
+        updateValue(for: redSlider)
+        updateValue(for: redValueLabel)
+        updateValue(for: redTextField)
+        setColor()
     }
     
     @IBAction func greenSliderAction(_ sender: UISlider) {
         greenCurrentValue = CGFloat(sender.value)
-        updateCurrentValue(colour: .green)
-        colourView.backgroundColor = UIColor(red: redCurrentValue, green: greenCurrentValue, blue: blueCurrentValue, alpha: alphaValue)
+        updateValue(for: greenSlider)
+        updateValue(for: greenValueLabel)
+        updateValue(for: greenTextField)
+        setColor()
     }
     
     @IBAction func blueSliderAction(_ sender: UISlider) {
         blueCurrentValue = CGFloat(sender.value)
-        updateCurrentValue(colour: .blue)
-        colourView.backgroundColor = UIColor(red: redCurrentValue, green: greenCurrentValue, blue: blueCurrentValue, alpha: alphaValue)
+        updateValue(for: blueSlider)
+        updateValue(for: blueValueLabel)
+        updateValue(for: blueTextField)
+        setColor()
     }
     
     @IBAction func didClickDoneButton(_ sender: UIBarButtonItem) {
         view.endEditing(true)
     }
     
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        
-        textField.inputAccessoryView = toolbar
-        
-        return true
-    }
     
     @IBAction func doneButtonPressed(_ sender: UIButton) {
         delegate.updateColor(redCurrentValue, greenCurrentValue, blueCurrentValue, alphaValue)
@@ -132,38 +118,30 @@ class ColorMixerViewController: UIViewController, UITextFieldDelegate {
         
         var currentValue: CGFloat
         
-        let alertController = UIAlertController(title: "Warning!", message: "Value of colour must from 0.0 to 1.0. Please enter correct value.", preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (action) in
-            self.redTextField.text = String(format: "%.2f",self.redOldValue)
-            self.greenTextField.text = String(format: "%.2f",self.greenOldValue)
-            self.blueTextField.text = String(format: "%.2f",self.blueOldValue)
-            print("Entered incoreect value")
-        }
-        alertController.addAction(cancelAction)
-        
         if let dbl = Double(textField.text!), dbl >= 0 && dbl <= 1 {
             currentValue = CGFloat(dbl)
             
-            switch textField.accessibilityIdentifier {
-            case "RedTextField":
+            switch textField.tag {
+            case 0:
                 redCurrentValue = currentValue
-                redSlider.value = Float(redCurrentValue)
-                updateCurrentValue(colour: .red)
-            case "GreenTextField":
+                updateValue(for: redSlider)
+                updateValue(for: redValueLabel)
+            case 1:
                 greenCurrentValue = currentValue
-                greenSlider.value = Float(greenCurrentValue)
-                updateCurrentValue(colour: .green)
-            case "BlueTextField":
+                updateValue(for: greenSlider)
+                updateValue(for: greenValueLabel)
+            case 2:
                 blueCurrentValue = currentValue
-                blueSlider.value = Float(blueCurrentValue)
-                updateCurrentValue(colour: .blue)
-            default:
-                break
+                updateValue(for: blueSlider)
+                updateValue(for: blueValueLabel)
+            default: break
             }
             
-            colourView.backgroundColor = UIColor(red: CGFloat(redCurrentValue), green: CGFloat(greenCurrentValue), blue: CGFloat(blueCurrentValue), alpha: alphaValue)
+            updateValue(for: textField)
+            setColor()
+            
         } else {
-            self.present(alertController, animated: true)
+            showAlert(title: "Warning!", message: "Value of colour must from 0.0 to 1.0. Please enter correct value.")
         }
     }
     
@@ -176,41 +154,78 @@ class ColorMixerViewController: UIViewController, UITextFieldDelegate {
         view.endEditing(true)
     }
     
-    func updateCurrentValue(colour: RGB) {
-        switch colour {
-        case .red:
-            redValueLabel.text = String(format: "%.2f",redCurrentValue)
-            redTextField.text = String(format: "%.2f",redCurrentValue)
-        case .green:
-            greenValueLabel.text = String(format: "%.2f",greenCurrentValue)
-            greenTextField.text = String(format: "%.2f",greenCurrentValue)
-        case .blue:
-            blueValueLabel.text = String(format: "%.2f",blueCurrentValue)
-            blueTextField.text = String(format: "%.2f",blueCurrentValue)
+    func setColor() {
+        colourView.backgroundColor = UIColor(red: redCurrentValue, green: greenCurrentValue, blue: blueCurrentValue, alpha: alphaValue)
+    }
+    
+    func string(value: CGFloat) -> String {
+        return String(format: "%.2f",value)
+    }
+    
+    
+    func updateDefaults() {
+        view.backgroundColor = UIColor(red: redBoardValue, green: greenBoardValue, blue: blueBoardValue, alpha: alphaValue)
+        
+        redSlider.minimumTrackTintColor = UIColor.red
+        redTextField.keyboardType = UIKeyboardType.decimalPad
+        redTextField.inputAccessoryView = toolbar
+        redTextField.textAlignment = .right
+        
+        greenSlider.minimumTrackTintColor = UIColor.green
+        greenTextField.keyboardType = UIKeyboardType.decimalPad
+        greenTextField.inputAccessoryView = toolbar
+        greenTextField.textAlignment = .right
+        
+        blueTextField.keyboardType = UIKeyboardType.decimalPad
+        blueTextField.inputAccessoryView = toolbar
+        blueTextField.textAlignment = .right
+    }
+    
+    func updateValue(for labels: UILabel...) {
+        labels.forEach { (label) in
+            switch label.tag {
+            case 0: redValueLabel.text = string(value: redCurrentValue)
+            case 1: greenValueLabel.text = string(value: greenCurrentValue)
+            case 2: blueValueLabel.text = string(value: blueCurrentValue)
+            default: break
+            }
         }
     }
     
-    func updateDefaultValue(colour: RGB) {
-        switch colour {
-        case .red:
-            redLabel.text = "Red:"
-            redSlider.minimumTrackTintColor = UIColor.red
-            redSlider.value = Float(redCurrentValue)
-            redTextField.keyboardType = UIKeyboardType.decimalPad
-            redTextField.textAlignment = .right
-        case .green:
-            greenLabel.text = "Green:"
-            greenSlider.minimumTrackTintColor = UIColor.green
-            greenSlider.value = Float(greenCurrentValue)
-            greenTextField.keyboardType = UIKeyboardType.decimalPad
-            greenTextField.textAlignment = .right
-        case .blue:
-            blueLabel.text = "Blue:"
-            blueSlider.value = Float(blueCurrentValue)
-            blueTextField.keyboardType = UIKeyboardType.decimalPad
-            blueTextField.textAlignment = .right
+    func updateValue(for textFields: UITextField...) {
+        textFields.forEach { (textField) in
+            switch textField.tag {
+            case 0: redTextField.text = string(value: redCurrentValue)
+            case 1: greenTextField.text = string(value: greenCurrentValue)
+            case 2: blueTextField.text = string(value: blueCurrentValue)
+            default: break
+            }
+        }
+    }
+    
+    func updateValue(for sliders: UISlider...) {
+        sliders.forEach { (slider) in
+            switch slider.tag {
+            case 0: redSlider.value = Float(redCurrentValue)
+            case 1: greenSlider.value = Float(greenCurrentValue)
+            case 2: blueSlider.value = Float(blueCurrentValue)
+            default: break
+            }
         }
     }
     
 }
 
+extension ColorMixerViewController {
+    func showAlert(title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (action) in
+            self.redTextField.text = String(format: "%.2f",self.redOldValue)
+            self.greenTextField.text = String(format: "%.2f",self.greenOldValue)
+            self.blueTextField.text = String(format: "%.2f",self.blueOldValue)
+            print("Entered incoreect value")
+        }
+        alertController.addAction(cancelAction)
+        present(alertController, animated: true)
+    }
+}
